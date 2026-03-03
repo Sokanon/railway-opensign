@@ -1,0 +1,61 @@
+# OpenSign Railway Template Configuration
+# This file documents the template composer settings for wiring services together.
+# Use this as a reference when setting up the template in the Railway dashboard.
+
+services:
+  # --- OpenSign Server (Backend API) ---
+  server:
+    source: github_repo  # This repo, root: /server
+    icon: opensign
+    variables:
+      # Core Parse Server config
+      APP_ID: ${{secret(24, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")}}
+      MASTER_KEY: ${{secret(32)}}
+      appName: open_sign_server
+      PARSE_MOUNT: /app
+      NODE_ENV: production
+      USE_LOCAL: "true"
+
+      # MongoDB connection - uses Railway managed MongoDB
+      MONGODB_URI: ${{MongoDB.MONGO_URL}}/OpenSignDB
+
+      # URL config - SERVER_URL is the Parse Server endpoint
+      SERVER_URL: https://${{server.RAILWAY_PUBLIC_DOMAIN}}/app
+      PUBLIC_URL: https://${{client.RAILWAY_PUBLIC_DOMAIN}}
+
+      # Storage defaults (local filesystem)
+      DO_SPACE: ""
+      DO_ENDPOINT: ""
+      DO_BASEURL: ""
+      DO_ACCESS_KEY_ID: ""
+      DO_SECRET_ACCESS_KEY: ""
+      DO_REGION: ""
+
+      # Email (optional - user configures)
+      SMTP_ENABLE: "false"
+      SMTP_HOST: ""
+      SMTP_PORT: ""
+      SMTP_USER_EMAIL: ""
+      SMTP_PASS: ""
+      MAILGUN_API_KEY: ""
+      MAILGUN_DOMAIN: ""
+      MAILGUN_SENDER: ""
+
+    volumes:
+      - mount_path: /usr/src/app/files
+
+  # --- OpenSign Client (React Frontend) ---
+  client:
+    source: github_repo  # This repo, root: /client
+    icon: opensign
+    variables:
+      REACT_APP_SERVERURL: https://${{server.RAILWAY_PUBLIC_DOMAIN}}/app
+      REACT_APP_APPID: ${{server.APP_ID}}
+      PUBLIC_URL: https://${{client.RAILWAY_PUBLIC_DOMAIN}}
+      GENERATE_SOURCEMAP: "false"
+      NODE_ENV: production
+
+  # --- MongoDB (Railway Managed) ---
+  mongodb:
+    source: railway_database  # MongoDB plugin
+    # Railway provides: MONGO_URL, MONGOHOST, MONGOPORT, etc.
