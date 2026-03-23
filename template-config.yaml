@@ -9,9 +9,12 @@ services:
     icon: opensign
     variables:
       # Core Parse Server config
-      APP_ID: ${{secret(24, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")}}
+      # IMPORTANT: APP_ID must be "opensign" — the pre-built client Docker image
+      # (opensign/opensign:main) has REACT_APP_APPID="opensign" baked in at build
+      # time. A mismatched APP_ID causes all Parse API requests to fail with 401.
+      APP_ID: opensign
       MASTER_KEY: ${{secret(32)}}
-      appName: open_sign_server
+      appName: "OpenSign™"
       PARSE_MOUNT: /app
       NODE_ENV: production
       USE_LOCAL: "true"
@@ -19,7 +22,7 @@ services:
       # MongoDB connection - uses Railway managed MongoDB
       MONGODB_URI: ${{MongoDB.MONGO_URL}}/OpenSignDB
 
-      # URL config - SERVER_URL is the Parse Server endpoint
+      # URL config - SERVER_URL is the public Parse Server endpoint
       SERVER_URL: https://${{server.RAILWAY_PUBLIC_DOMAIN}}/app
       PUBLIC_URL: https://${{client.RAILWAY_PUBLIC_DOMAIN}}
 
@@ -31,7 +34,7 @@ services:
       DO_SECRET_ACCESS_KEY: ""
       DO_REGION: ""
 
-      # Email (optional - user configures)
+      # Email (optional - user configures post-deployment)
       SMTP_ENABLE: "false"
       SMTP_HOST: ""
       SMTP_PORT: ""
@@ -50,7 +53,8 @@ services:
     icon: opensign
     variables:
       REACT_APP_SERVERURL: https://${{server.RAILWAY_PUBLIC_DOMAIN}}/app
-      REACT_APP_APPID: ${{server.APP_ID}}
+      # Must match the server's APP_ID and the value baked into the Docker image
+      REACT_APP_APPID: opensign
       PUBLIC_URL: https://${{client.RAILWAY_PUBLIC_DOMAIN}}
       GENERATE_SOURCEMAP: "false"
       NODE_ENV: production

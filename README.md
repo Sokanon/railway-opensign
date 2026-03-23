@@ -12,10 +12,10 @@ One-click deploy of [OpenSign](https://www.opensignlabs.com/) on Railway — an 
 
 ## Architecture
 
-OpenSign is a MERN stack application. The client communicates with the server via `/api/*` routes. The server connects to MongoDB for data persistence and stores uploaded files locally in a volume.
+OpenSign is a MERN stack application. On Railway, each service gets its own domain (no reverse proxy needed). The client talks directly to the server's public URL. The server connects to MongoDB for data persistence and stores uploaded files locally in a volume.
 
 ```
-Client (React, :3000) --> Server (Node.js/Express, :8080) --> MongoDB (:27017)
+Client (React, :3000) --https--> Server (Node.js/Express, :8080) --> MongoDB (:27017)
 ```
 
 ## Environment Variables
@@ -24,12 +24,12 @@ Client (React, :3000) --> Server (Node.js/Express, :8080) --> MongoDB (:27017)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `APP_ID` | Parse Server application ID | Auto-generated |
+| `APP_ID` | Parse Server application ID | `opensign` (must not change) |
 | `MASTER_KEY` | Parse Server master key (keep secret) | Auto-generated |
 | `MONGODB_URI` | MongoDB connection string | Auto-configured via reference |
 | `SERVER_URL` | Internal server URL for Parse Server | Auto-configured |
 | `PUBLIC_URL` | Public-facing URL of the application | Set to client domain |
-| `appName` | Application name for emails | `open_sign_server` |
+| `appName` | Application name for emails | `OpenSign™` |
 | `USE_LOCAL` | Use local file storage instead of S3 | `true` |
 | `SMTP_ENABLE` | Enable SMTP for email sending | `false` |
 | `SMTP_HOST` | SMTP server hostname | _(optional)_ |
@@ -42,12 +42,17 @@ Client (React, :3000) --> Server (Node.js/Express, :8080) --> MongoDB (:27017)
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `REACT_APP_SERVERURL` | URL of the backend API | Auto-configured via reference |
-| `REACT_APP_APPID` | Parse Server app ID (must match server) | Auto-configured via reference |
+| `REACT_APP_APPID` | Parse Server app ID (must match server) | `opensign` (must not change) |
 | `PUBLIC_URL` | Public URL of the frontend | Auto-configured |
 
 ## Volumes
 
 - **Server**: `/usr/src/app/files` — Stores uploaded documents and signed PDFs
+
+## Important Notes
+
+- **Do not change `APP_ID`**: The pre-built client Docker image has `REACT_APP_APPID=opensign` baked in at build time. The server's `APP_ID` must remain `opensign` or all API requests will fail with 401 Unauthorized.
+- **MongoDB startup**: The server waits for MongoDB to become reachable before starting Parse Server, preventing crash loops during initial deployment.
 
 ## Post-Deployment
 
